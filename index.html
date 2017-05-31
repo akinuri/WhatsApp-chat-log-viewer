@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title>WhatsApp Chat Log Viewer</title>
+        <link rel="stylesheet" type="text/css" media="screen" href="styles.css" />
+    <head>
+<body>
+
+<div id="screen">
+    <div id="contact">
+        <div id="profile-picture"></div>
+        <div id="contact-name">Contact Name</div>
+    </div>
+    <div id="chat">
+        <div id="upload">
+            <label id="label" for="file">
+                <strong id="manual">Choose a file</strong> or drag it here.
+            </label>
+            <div id="info">
+                <p>Example file name:</p>
+                <p class="example">WhatsApp Chat with John.txt</p>
+                <p>Example file content:</p>
+                <p class="example">6/3/15, 10:00 PM - Dean: Hey, man.</p>
+                <p class="example">6/3/15, 10:00 PM - Sam: Hi.</p>
+            </div>
+            <input type="file" id="file" />
+        </div>
+    </div>
+</div>
+
+<script src="scripts/jquery-2.2.0.min.js"></script>
+<script src="scripts/text-width.js"></script>
+<script src="scripts/program.js"></script>
+<script>
+    var $form = $("#upload");
+    
+    $form.on('drag dragstart dragend dragover dragenter dragleave drop', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    })
+    .on('dragover dragenter', function() {
+        $form.addClass('is-dragover');
+    })
+    .on('dragleave dragend drop', function() {
+        $form.removeClass('is-dragover');
+    })
+    .on('drop', function(e) {
+        loadChatLog(e.originalEvent.dataTransfer.files[0]);
+    });
+    
+    function loadChatLog(file) {
+        var contactName = null;
+        if (file.name) {
+            contactName = file.name.match(/WhatsApp Chat with (.*)\.txt/)[1];
+        }
+        else if (file.value) {
+            contactName = file.value.match(/WhatsApp Chat with (.*)\.txt/)[1];
+        }
+        $("#contact-name").text(contactName);
+        
+        var messages, rawLog;
+        
+        var fReader = new FileReader();
+        fReader.readAsText(file, "ANSI");
+        
+        fReader.onload = function (e) {
+            rawLog = e.target.result;
+            messages = rawLog.split(/\n|\r\n/);
+            messages = parseMessages(messages);
+            loadMessages(messages, contactName);
+        };
+    }
+    
+    $("#file").on("change", function () {
+        loadChatLog(this.files[0]);
+    });
+</script>
+
+
+</body>
+</html>
